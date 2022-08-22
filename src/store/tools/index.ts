@@ -2,12 +2,14 @@ import { defineStore } from 'pinia';
 import { useCrosshairsToolStore } from './crosshairs';
 import { usePaintToolStore } from './paint';
 import { useRulerToolStore } from './rulers';
+import { useMprToolStore } from './mpr';
 
 export enum Tools {
   WindowLevel = 'WindowLevel',
   Ruler = 'Ruler',
   Paint = 'Paint',
   Crosshairs = 'Crosshairs',
+  Mpr = 'Mpr',
 }
 
 interface State {
@@ -28,6 +30,9 @@ function getStore(tool: Tools): IToolStore | null {
   }
   if (tool === Tools.Crosshairs) {
     return useCrosshairsToolStore();
+  }
+  if (tool === Tools.Mpr) {
+    return useMprToolStore();
   }
   return null;
 }

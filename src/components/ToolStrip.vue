@@ -64,6 +64,16 @@
         @click="toggle"
       />
     </groupable-item>
+    <groupable-item v-slot:default="{ active, toggle }" :value="Tools.Mpr">
+      <tool-button
+        size="40"
+        icon="mdi-axis-arrow"
+        name="Mpr"
+        :buttonClass="['tool-btn', active ? 'tool-btn-selected' : '']"
+        :disabled="noCurrentImage"
+        @click="toggle"
+      />
+    </groupable-item>
   </item-group>
 </template>
 

@@ -6,7 +6,8 @@ declare module '@kitware/vtk.js/vtk' {
 
 declare module '@kitware/vtk.js/interfaces-additions' {
   import { EVENT_ABORT, VOID } from '@kitware/vtk.js/macros';
-  export type EventHandler = (...any: args[]) => EVENT_ABORT | VOID | void;
+  export type EventReturnValue = EVENT_ABORT | VOID | void;
+  export type EventHandler = (...any: args[]) => EventReturnValue;
   export type vtkBounds = [number, number, number, number, number, number];
 }
 
@@ -936,4 +937,93 @@ declare module '@kitware/vtk.js/Widgets/Core/StateBuilder' {
 declare module '@kitware/vtk.js/Common/DataModel/BoundingBox' {
   import { Bounds } from '@kitware/vtk.js/types';
   export function inflate(bounds: Bounds, delta: number);
+}
+
+// TEMPORARY -------------------------------------
+declare module '@kitware/vtk.js/Widgets/Widgets3D/ResliceCursorWidget' {
+  import vtkPlaneSource from '@kitware/vtk.js/Filters/Sources/PlaneSource';
+  import vtkRenderer from '@kitware/vtk.js/Rendering/Core/Renderer';
+  import vtkImageData from '@kitware/vtk.js/Common/DataModel/ImageData';
+  import { ViewTypes } from '@kitware/vtk.js/Widgets/Core/WidgetManager/Constants';
+  import vtkAbstractWidgetFactory from '@kitware/vtk.js/Widgets/Core/AbstractWidgetFactory';
+  import { mat4, vec3 } from 'gl-matrix';
+  
+  export type ReslicePlane = {
+    modified: boolean,
+    origin: vec3,
+    point1: vec3,
+    point2: vec3
+  }
+  
+  export interface vtkResliceCursorWidget extends vtkAbstractWidgetFactory {
+    setImage(image: vtkImageData): void;
+    setCenter(center: vec3): void;
+    updateCameraPoints(renderer: vtkRenderer, viewType: ViewTypes, resetFocalPoint: boolean,
+                       keepCenterFocalDistance: boolean, computeFocalPointOffset: boolean): void;
+    resetCamera(renderer: vtkRenderer, viewType: ViewTypes, resetFocalPoint: boolean,
+                keepCenterFocalDistance: boolean): void;
+    updateReslicePlane(imageReslice: any, viewType: ViewTypes): ReslicePlane;
+    getPlaneSourceFromViewType(type: ViewTypes): vtkPlaneSource;
+    getPlaneNormalFromViewType(viewType: ViewTypes): vec3;
+    getPlaneNormalFromViewType(viewType: ViewTypes): vec3;
+    getOtherPlaneNormals(viewType: ViewTypes): vec3[2];
+    getResliceMatrix(): mat4;
+  }
+  
+  export function extend(
+    publicAPI: object,
+    model: object,
+    initialValues? : object
+  ): vtkResliceCursorWidget;
+
+  export function newInstance(initialValues?: object): vtkResliceCursorWidget;
+   
+  export declare const vtkResliceCursorWidget: {
+      newInstance: typeof newInstance,
+      extend: typeof extend,
+  };
+   
+  export default vtkResliceCursorWidget;
+}
+
+declare module '@kitware/vtk.js/Widgets/Widgets3D/ResliceCursorWidget/behavior' {
+  import { EventReturnValue } from '@kitware/vtk.js/interfaces-additions';
+  import vtkLine from '@kitware/vtk.js/Common/DataModel/Line';
+  import { IRenderWindowInteractorEvent } from '@kitware/vtk.js/Rendering/Core/RenderWindowInteractor';
+  import { ViewTypes } from '@kitware/vtk.js/Widgets/Core/WidgetManager/Constants';
+  import vtkAbstractWidget from '@kitware/vtk.js/Widgets/Core/AbstractWidget';
+  import { vec3 } from 'gl-matrix';
+  
+  export interface vtkResliceCursorViewWidget extends vtkAbstractWidget {
+    resetUpdateMethod(): void;
+    startScrolling(newPosition: vec3): void;
+    endScrolling(): void;
+    updateCursor(): void;
+  
+    handleLeftButtonPress(callData: IRenderWindowInteractorEvent): EventReturnValue;
+    handleMouseMove(callData: IRenderWindowInteractorEvent): EventReturnValue;
+    handleLeftButtonRelease(): EventReturnValue;
+    handleRightButtonPress(callData: IRenderWindowInteractorEvent): EventReturnValue;
+    handleRightButtonRelease(callData: IRenderWindowInteractorEvent): EventReturnValue;
+    handleStartMouseWheel(callData: IRenderWindowInteractorEvent): EventReturnValue;
+    handleMouseWheel(callData: IRenderWindowInteractorEvent): EventReturnValue;
+    handleEndMouseWheel(calldata: IRenderWindowInteractorEvent): EventReturnValue;
+    handleMiddleButtonPress(calldata: IRenderWindowInteractorEvent): EventReturnValue;
+    handleMiddleButtonRelease(calldata: IRenderWindowInteractorEvent): EventReturnValue;
+    handleEvent(calldata: IRenderWindowInteractorEvent): EventReturnValue;
+  
+    invokeInternalInteractionEvent(): void;
+    startInteraction(): void;
+    endInteraction(): void;
+    translateCenterOnPlaneDirection(nbSteps: number): void;
+  
+    translateAxis(callData: IRenderWindowInteractorEvent): void;
+    getBoundedCenter(newCenter: vec3): vec3;
+    translateCenter(callData: IRenderWindowInteractorEvent): void;
+    rotateLine(callData: IRenderWindowInteractorEvent): void;
+    rotateLineInView(line: vtkLine, radianAngle: number): void;
+    rotatePlane(viewType: ViewTypes, radianAngle: number, planeNormal: vec3): void;
+  }
+
+  export default function widgetBehavior(publicAPI: object, model: object): void
 }

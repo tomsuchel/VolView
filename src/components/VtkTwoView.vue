@@ -53,6 +53,12 @@
           :widget-manager="widgetManager"
           :slice="slice"
         />
+        <mpr-tool
+          :view-id="viewID"
+          :view-direction="viewDirection"
+          :widget-manager="widgetManager"
+          :slice="slice"
+        />
       </div>
       <view-overlay-grid class="overlay-no-events view-annotations">
         <template v-slot:top-middle>
@@ -197,6 +203,7 @@ import {
 } from '../store/view-configs';
 import { usePersistCameraConfig } from '../composables/usePersistCameraConfig';
 import CrosshairsTool from './tools/CrosshairsTool.vue';
+import MprTool from './tools/MprTool.vue'
 
 export default defineComponent({
   name: 'VtkTwoView',
@@ -220,8 +227,14 @@ export default defineComponent({
     RulerTool,
     PaintTool,
     CrosshairsTool,
+    MprTool,
   },
   setup(props) {
+
+    // here we have access to:
+    // - the imageData > needed for widget.setImage(image);
+    // - the widgetManager > needed for widget = widgetManager.addWidget(resliceCursor)
+
     const view2DStore = useView2DStore();
     const viewConfigStore = useViewConfigStore();
     const paintStore = usePaintToolStore();
